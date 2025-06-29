@@ -34,7 +34,7 @@ describe('Analysis page', () => {
             </MemoryRouter>
         );
 
-        const fileInput = screen.getAllByTestId('dropzone-file-input')[0] as HTMLInputElement;
+        const fileInput = screen.getByTestId('dropzone-file-input') as HTMLInputElement;
         const badFile = new File(['content'], 'test.txt', { type: 'text/plain' });
 
         fireEvent.change(fileInput, { target: { files: [badFile] } });
@@ -45,7 +45,6 @@ describe('Analysis page', () => {
     });
 
     it('запускает парсинг и обновляет прогресс', async () => {
-        // Подготавливаем стрим с данными
         const mockChunks = [
             JSON.stringify({
                 total_spend_galactic: 1000,
@@ -87,8 +86,8 @@ describe('Analysis page', () => {
         );
 
         // Находим первый input[type="file"] через getAllByTestId
-        const fileInputs = screen.getAllByTestId('dropzone-file-input');
-        const fileInput = fileInputs[0] as HTMLInputElement;
+        const fileInputs = screen.getByTestId('dropzone-file-input');
+        const fileInput = fileInputs as HTMLInputElement;
 
         // Создаём мокнутый CSV-файл
         const file = new File(['id,civ,date,spend\n1,humans,63,9026\n2,blobs,16,6598'], 'data.csv', {
@@ -100,27 +99,27 @@ describe('Analysis page', () => {
 
         // Проверяем, что файл загружен
         await waitFor(() => {
-            const statusTexts = screen.getAllByTestId('dropzone-status-text');
-            expect(statusTexts[0]).toHaveTextContent('файл загружен!');
+            const statusTexts = screen.getByTestId('dropzone-status-text');
+            expect(statusTexts).toHaveTextContent('файл загружен!');
         });
 
         // Находим кнопку отправки
-        const startButtons = screen.getAllByTestId('upload-button');
-        const startButton = startButtons[0];
+        const startButtons = screen.getByTestId('upload-button');
+        const startButton = startButtons;
 
         // Нажимаем на кнопку
         await fireEvent.click(startButton);
 
         // Ожидаем начало парсинга
         await waitFor(() => {
-            const statusTexts = screen.getAllByTestId('dropzone-status-text');
-            expect(statusTexts[0]).toHaveTextContent('идёт парсинг файла');
+            const statusTexts = screen.getByTestId('dropzone-status-text');
+            expect(statusTexts).toHaveTextContent('идёт парсинг файла');
         });
 
         // Ожидаем завершения парсинга
         await waitFor(() => {
-            const statusTexts = screen.getAllByTestId('dropzone-status-text');
-            expect(statusTexts[0]).toHaveTextContent('готово!');
+            const statusTexts = screen.getByTestId('dropzone-status-text');
+            expect(statusTexts).toHaveTextContent('готово!');
         });
 
         // Ожидаем появление карточек

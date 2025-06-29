@@ -9,7 +9,7 @@ export const GenerateMoreButton = () => {
     };
 
     return (
-        <Button variant="primary" onClick={handleGenerateMore}>
+        <Button variant="primary" onClick={handleGenerateMore} data-testid="generate-more-button">
             Сгенерировать больше
         </Button>
     );

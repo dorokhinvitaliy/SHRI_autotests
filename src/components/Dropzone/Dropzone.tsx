@@ -131,7 +131,13 @@ export const Dropzone: FC<Props> = ({ file, status, error, onFileSelect, onClear
         }
 
         return (
-            <Button type="button" variant="upload" onClick={handleUploadClick} disabled={isProcessing}>
+            <Button
+                type="button"
+                variant="upload"
+                onClick={handleUploadClick}
+                disabled={isProcessing}
+                data-testid="upload-file-btn"
+            >
                 Загрузить файл
             </Button>
         );

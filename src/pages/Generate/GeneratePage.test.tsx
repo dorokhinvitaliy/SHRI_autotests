@@ -1,93 +1,64 @@
-// src/pages/Generate/Generate.test.tsx
-import '@testing-library/jest-dom/vitest';
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, waitFor, fireEvent } from '@testing-library/react';
+import '@testing-library/jest-dom';
+import { render, screen, waitFor } from '@testing-library/react';
+// import userEvent from '@testing-library/user-event';
 import userEvent from '@testing-library/user-event';
-import { MemoryRouter } from 'react-router-dom';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 import { GeneratePage } from './GeneratePage';
 
-describe('GeneratePage', () => {
-    const originalFetch = global.fetch;
+describe('GeneratePage Component', () => {
+    const mockFetch = vi.fn();
+    const mockCreateObjectURL = vi.fn();
+    const mockRevokeObjectURL = vi.fn();
 
     beforeEach(() => {
-        // Заменяем fetch на mock
-        global.fetch = vi.fn();
+        global.fetch = mockFetch;
+        global.URL.createObjectURL = mockCreateObjectURL;
+        global.URL.revokeObjectURL = mockRevokeObjectURL;
+
+        mockFetch.mockReset();
+        mockCreateObjectURL.mockReturnValue('mock-url');
     });
 
-    afterEach(() => {
-        // Восстанавливаем оригинальный fetch после каждого теста
-        global.fetch = originalFetch;
-    });
-    it('рендерит кнопку "Сгенерировать"', () => {
-        render(
-            <MemoryRouter initialEntries={['/generate']}>
-                <GeneratePage />
-            </MemoryRouter>
-        );
+    it('отображаетcя заголовок и кнопка генерации', () => {
+        render(<GeneratePage />);
 
-        expect(screen.getAllByTestId('generate-button')[0]).toBeInTheDocument();
+        expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument();
+        expect(screen.getByTestId('generate-button')).toHaveTextContent('Начать генерацию');
     });
 
-    it('отображает лоадер при нажатии на "Сгенерировать" и затем сообщение об успехе', async () => {
-        const mockBlob = new Blob([''], { type: 'text/csv' });
-
-        global.fetch = vi.fn().mockResolvedValue({
-            ok: true,
-            blob: () => Promise.resolve(mockBlob),
-            headers: {
-                get: vi.fn().mockReturnValue('filename="report.csv"'),
-            },
+    describe('случай успешной генерация', () => {
+        beforeEach(() => {
+            mockFetch.mockResolvedValue({
+                ok: true,
+                headers: new Map([['content-disposition', 'filename="report.csv"']]),
+                blob: () => Promise.resolve(new Blob()),
+            });
         });
-        render(
-            <MemoryRouter initialEntries={['/generate']}>
-                <GeneratePage />
-            </MemoryRouter>
-        );
 
-        const generateButton = screen.getAllByTestId('generate-button')[0];
-        userEvent.click(generateButton);
+        it('при клике на кнопку скачивается файл и появляется сообщение об успехе', async () => {
+            render(<GeneratePage />);
+            await userEvent.click(screen.getByTestId('generate-button'));
 
-        await waitFor(() => {
-            expect(generateButton).toBeDisabled();
-            expect(screen.getByTestId('loader')).toBeInTheDocument();
+            await waitFor(() => {
+                expect(mockCreateObjectURL).toHaveBeenCalled();
+                expect(screen.getByText('Отчёт успешно сгенерирован!')).toBeInTheDocument();
+            });
         });
-        expect(screen.getByTestId('generate-error')).toBeInTheDocument();
     });
 
-    it('обрабатывает ошибку сервера', async () => {
-        render(
-            <MemoryRouter initialEntries={['/generate']}>
-                <GeneratePage />
-            </MemoryRouter>
-        );
-
-        const generateButton = screen.getAllByTestId('generate-button')[0];
-        fireEvent.click(generateButton);
-
-        global.fetch = vi.fn(() =>
-            Promise.resolve({
+    describe('случай ошибки генерации', () => {
+        it('показывает сообщение об ошибке с сервера', async () => {
+            mockFetch.mockResolvedValue({
                 ok: false,
-                status: 500,
-            })
-        ) as any;
+                json: () => Promise.resolve({ error: 'Ошибка на сервере' }),
+            });
 
-        await waitFor(() => {
-            expect(screen.getByTestId('generate-error')).toBeInTheDocument();
+            render(<GeneratePage />);
+            const btn = screen.getByTestId('generate-button');
+            await userEvent.click(btn);
+
+            expect(await screen.findByTestId('generate-error')).toBeInTheDocument();
         });
     });
-
-    /* it('доступен по маршруту /generate', async () => {
-        const { container } = render(
-            <MemoryRouter initialEntries={['/generate']}>
-                <GeneratePage />
-            </MemoryRouter>
-        );
-
-        await waitFor(() => {
-            expect(container).toBeInTheDocument();
-        });
-
-        expect(screen.getAllByTestId('generate-button')[0]).toBeInTheDocument();
-    }); */
 });
