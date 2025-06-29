@@ -165,6 +165,7 @@ export const Dropzone: FC<Props> = ({ file, status, error, onFileSelect, onClear
                 [styles.dragActive]: isDragActive,
                 [styles.dragReject]: validationError,
             })}
+            data-testid="uploader"
             onDragEnter={handleDragEnter}
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
@@ -173,11 +174,20 @@ export const Dropzone: FC<Props> = ({ file, status, error, onFileSelect, onClear
             role="button"
             tabIndex={0}
         >
-            <input type="file" accept=".csv" ref={inputRef} onChange={handleInputChange} hidden />
+            <input
+                data-testid="dropzone-file-input"
+                type="file"
+                accept=".csv"
+                ref={inputRef}
+                onChange={handleInputChange}
+                hidden
+            />
 
             {renderContent()}
 
-            <Typography size="l">{renderStatusText()}</Typography>
+            <Typography size="l" data-testid="dropzone-status-text">
+                {renderStatusText()}
+            </Typography>
         </div>
     );
 };

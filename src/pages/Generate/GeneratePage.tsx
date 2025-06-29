@@ -9,7 +9,7 @@ import cn from 'classnames';
 import styles from './GeneratePage.module.css';
 
 // 10 мб
-const DEFAULT_SIZE = 0.01;
+const DEFAULT_SIZE = 0.1;
 
 export const GeneratePage = () => {
     const [isGenerating, setIsGenerating] = useState(false);
@@ -43,6 +43,7 @@ export const GeneratePage = () => {
 
             const url = window.URL.createObjectURL(blob);
             const link = document.createElement('a');
+            link.setAttribute('data-testid', 'download-link');
             link.href = url;
             link.download = filename;
 
@@ -82,6 +83,7 @@ export const GeneratePage = () => {
                 variant="primary"
                 disabled={isGenerating}
                 onClick={handleGenerate}
+                data-testid="generate-button"
                 className={cn(styles.generateButton, {
                     [styles.isGenerating]: isGenerating,
                 })}
@@ -90,12 +92,12 @@ export const GeneratePage = () => {
             </Button>
 
             {successMessage && (
-                <Typography as="p" size="s">
+                <Typography as="p" size="s" data-testid="generate-success">
                     {successMessage}
                 </Typography>
             )}
             {error && (
-                <Typography as="p" size="s" color="error">
+                <Typography as="p" size="s" color="error" data-testid="generate-error">
                     {error}
                 </Typography>
             )}

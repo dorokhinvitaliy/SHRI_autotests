@@ -27,7 +27,7 @@ export const FileUploadSection: FC<Props> = ({ file, status, error, onFileSelect
             <Dropzone file={file} status={status} error={error} onFileSelect={onFileSelect} onClear={onClear} />
 
             {showSendButton && (
-                <Button type="button" variant="primary" disabled={!file} onClick={onSend} className={styles.sendButton}>
+                <Button type="button" variant="primary" disabled={!file} onClick={onSend} className={styles.sendButton} data-testid="upload-button">
                     Отправить
                 </Button>
             )}
